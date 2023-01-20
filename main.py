@@ -78,7 +78,6 @@ class Naver:
         
         # 인증 대기시간 할당
         time.sleep(10)
-
         
 def main():
     # Create Naver Instance
