@@ -11,6 +11,7 @@ from typing import Dict , List , Union
 import time
 import pyperclip as pc
 import pyautogui
+import re
 import sys
 
 class ChromeDriver:
@@ -33,11 +34,54 @@ class Naver:
         self.pw : str = get_login_secrets(key='pw') # Login PW
         self.browser  = ChromeDriver().set_driver() # Web Driver
     
-    def run(self):
+    def run(self)-> None:
         # 네이버 로그인
         self.naver_login()
         
-                
+        # 주소록 데이터 추출
+        neighbor_data : List[Dict[str,str]] = self.get_address_book()
+        
+        print(neighbor_data)
+    
+    def get_address_book(self)-> List[Dict[str,str]]:
+        """ 주소록 데이터 추출 """
+        # 주소록 URL
+        address_book_url : str = 'https://mail.naver.com/v2/popup/contact'
+        
+        # 주소록 이동
+        self.browser.get(url=address_book_url)
+        
+        # 잠시 대기
+        self.browser.implicitly_wait(time_to_wait=10)
+        
+        # 블로그 이웃 카테고리 클릭
+        self.browser.find_elements(By.CSS_SELECTOR,'a.group_link.icon_group')[-2].click()
+        
+        # 잠시 대기
+        time.sleep(2.0)
+        
+        # 이웃 수 추출
+        neighbor_count : int = len(self.browser.find_elements(By.CSS_SELECTOR,'li.user_item'))        
+        
+        # 리스트 변수 선언
+        neighbor_list : List[Dict[str,str]] = list()
+        
+        # 배열 순회
+        for idx in range(neighbor_count):
+            neighbor_dic : Dict[str,str] = dict()
+            
+            neighbors : list = self.browser.find_elements(By.CSS_SELECTOR,'li.user_item')
+            
+            neightbor_name :  str  = re.sub('[^가-힣ㄱ-ㅎA-Za-z]','',str(neighbors[idx].find_element(By.CSS_SELECTOR,'label').text).split()[0])
+            
+            neightbor_email : str = re.sub('[^A-Za-z@.]','',str(neighbors[idx].find_element(By.CSS_SELECTOR,'label').text).split()[1])
+            
+            neighbor_dic['name']  = neightbor_name
+            neighbor_dic['email'] = neightbor_email
+            neighbor_list.append(neighbor_dic)
+        
+        return neighbor_list
+                        
     def naver_login(self)-> None:
         """ 네이버 로그인 처리 """
         # 네이버 로그인 페이지 이동
@@ -77,9 +121,9 @@ class Naver:
             sys.exit()
         
         # 인증 대기시간 할당
-        time.sleep(10)
+        time.sleep(6)
         
-def main():
+def main()-> None:
     # Create Naver Instance
     naver : Naver = Naver()
     
