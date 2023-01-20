@@ -6,8 +6,11 @@
 ## 사용 라이브러리
 
 -   Selenium
--   ..
--   ..
+-   typing
+-   pyperclip
+-   pyautogui
+-   unittest
+
 ***
 
 ## 프로그램 소개
